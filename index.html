@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secret Love Message</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
+      color: #333;
+      padding: 10px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+      font-size: 2rem;
+    }
+    #hidden-message-container {
+      margin: 20px auto;
+      padding: 15px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      font-size: 1.1rem;
+      min-height: 60px;
+      transition: all 0.5s ease;
+    }
+    #hidden-message {
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+    #game {
+      width: 90%;
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    .puzzle-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      margin-bottom: 15px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s ease;
+    }
+    .puzzle-card.correct {
+      animation: pop 0.6s ease forwards;
+    }
+    @keyframes pop {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+    .puzzle-hint {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #555;
+    }
+    .puzzle-input {
+      padding: 10px;
+      font-size: 1rem;
+      width: calc(100% - 22px);
+      margin-bottom: 8px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      transition: border-color 0.3s ease;
+    }
+    .puzzle-input:focus {
+      outline: none;
+      border-color: #a6c1ee;
+    }
+    /* Add error styling for incorrect answers */
+    .puzzle-input.error {
+      border-color: red;
+    }
+    .puzzle-button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #a6c1ee;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .puzzle-button:hover {
+      background: #8a9bd8;
+    }
+    .puzzle-card.solved .puzzle-input,
+    .puzzle-card.solved .puzzle-button {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .congrats {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Complete all the answers (case insensitive) to reveal the entire message which is hidden behind the white card below</h1>
+  <div id="hidden-message-container">
+    <div id="hidden-message"></div>
+  </div>
+  <div id="game"></div>
+  <div id="congrats" class="congrats"></div>
+
+  <script>
+    // List of puzzles with the secret answers and hints.
+    const puzzles = [
+      { answer: "Harshvardhan", hint: "Who do you belong to?" },
+      { answer: "Pilates", hint: "Accent makes it hotter" },
+      { answer: "Flat White", hint: "Your real love?" },
+      { answer: "Potato Chips", hint: "I don't like these but I like you eating these" },
+      { answer: "Tomatoes", hint: "Healthy fridge snack" },
+      { answer: "Matki", hint: "Sabzi you like and not aloo" },
+      { answer: "Chimni", hint: "Your dad used to call you this (the most perfect word for you fr)" },
+      { answer: "House MD", hint: "A cripple whom you watch every day" },
+      { answer: "Sex and the City", hint: "Heels addiction" },
+      { answer: "Grey's Anatomy", hint: "Sad as fuck but you love it" },
+      { answer: "Yellow dress", hint: "My favourite attire on you" },
+      { answer: "Boobs", hint: "Sucking, squeezing, maybe a bit hard I have got rough hands" },
+      { answer: "Ass", hint: "You need to be careful while you have your back towards me beacuse of this" },
+      { answer: "Waist", hint: "Hold it in my hands and pick you up like a trophy that you are" },
+      { answer: "Neck", hint: "The only place on your body which will be red because of me and I won't be sorry" },
+      { answer: "Eyes", hint: "I don't mind getting lost in them forever" },
+      { answer: "Salmon", hint: "Fridays are for this" },
+      { answer: "Showers", hint: "I hate this guy" },
+      { answer: "Baingan Bharta", hint: "Another sabzi" },
+      { answer: "Palladium", hint: "Your favourite  place on the planet" },
+      { answer: "Pineapple Cake", hint: "This on pizzas is bad but you like this on something else" },
+      { answer: "Her", hint: "eat eat eat eat eat eat eat eat eat eat all day long just eat" },
+      { answer: "Caramel Popcorn", hint: "You tried these recently and you like them for some reason" },
+      { answer: "13000", hint: "Amount mismatch because extra 0" },
+      { answer: "badmosh", hint: "My name before" },
+      { answer: "dishes", hint: "You hate doing these but you have to"},
+      { answer: "shri sakhi", hint: "What do I see you as?"},
+      { answer: "mirror", hint: "We are gonna do the deed in front of this"},
+      { answer: "butter idli", hint: "You love eating these and you know they are unhealthy beacuase they have too much of something"},
+      { answer: "hibiscus", hint: "Fancy Dress"},
+      { answer: "anushka", hint: "Will you be the ____ to my virat?"},
+      { answer: "Harshvardhan", hint: "Who do you belong to?"}
+    ];
+    
+    // The hidden love message to be revealed gradually.
+    const fullMessage = "Hey Pretty Love, I just want to tell you that I imagined buying jhumkas for you and putting them in your ears with my own hands while writing this. You have no idea how I am smiling right now. Okay the honest man that I am I also imagined unhooking your bra with my one hand. I LOVE YOU and your giggles and laughs are way better than all the music which these ears have ever heard. The reckless hasty man that I am, I am ready to wait for you forever and I can't think otherwise. I want to do it raw with you for the rest of my life and enjoy every bit of you every single day. You mean so much to me. ";
+    
+    // Split the message by words.
+    const messageWords = fullMessage.split(" ");
+    const totalPuzzles = puzzles.length;
+    let solvedCount = 0;
+
+    // References to DOM elements.
+    const gameDiv = document.getElementById('game');
+    const hiddenMessageDiv = document.getElementById('hidden-message');
+    const congratsDiv = document.getElementById('congrats');
+
+    // Create a puzzle card for each puzzle.
+    puzzles.forEach((puzzle, idx) => {
+      const card = document.createElement('div');
+      card.className = 'puzzle-card';
+      card.id = `puzzle-${idx}`;
+
+      const hint = document.createElement('div');
+      hint.className = 'puzzle-hint';
+      // Display ONLY the hint, not the answer.
+      hint.textContent = `${idx + 1}) ${puzzle.hint}`;
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = "Your guess...";
+      input.className = 'puzzle-input';
+      input.id = `input-${idx}`;
+      
+      // Allow pressing Enter to submit the guess.
+      input.addEventListener('keypress', (e) => {
+        if (e.key === "Enter") {
+          checkGuess(idx);
+        }
+      });
+
+      const button = document.createElement('button');
+      button.textContent = "Submit";
+      button.className = 'puzzle-button';
+      button.addEventListener('click', () => checkGuess(idx));
+
+      // Append elements to the card.
+      card.appendChild(hint);
+      card.appendChild(input);
+      card.appendChild(button);
+
+      // Add the card to the game container.
+      gameDiv.appendChild(card);
+    });
+
+    // Update the hidden message reveal based on how many puzzles are solved.
+    function updateMessage() {
+      // Calculate how many words to show.
+      const revealCount = Math.floor((solvedCount / totalPuzzles) * messageWords.length);
+      const revealedText = messageWords.slice(0, revealCount).join(" ");
+      hiddenMessageDiv.style.opacity = 0; // start fade out.
+      setTimeout(() => {
+        hiddenMessageDiv.textContent = revealedText;
+        hiddenMessageDiv.style.opacity = 1; // fade in new text.
+      }, 300);
+    }
+    
+    // Check the answer for the puzzle at a given index.
+    function checkGuess(index) {
+      const card = document.getElementById(`puzzle-${index}`);
+      // If already solved, do nothing.
+      if (card.classList.contains('solved')) return;
+      
+      const input = document.getElementById(`input-${index}`);
+      const userGuess = input.value.trim().toLowerCase();
+      const correctAnswer = puzzles[index].answer.trim().toLowerCase();
+      
+      if (userGuess === correctAnswer) {
+        // Mark this puzzle as solved.
+        card.classList.add('solved', 'correct');
+        input.disabled = true;
+        const btn = card.querySelector('button');
+        btn.disabled = true;
+        solvedCount++;
+        updateMessage();
+        setTimeout(() => {
+          card.classList.remove('correct');
+        }, 600);
+        if (solvedCount === totalPuzzles) {
+          setTimeout(() => {
+            congratsDiv.textContent = "Congratulations, you've revealed the whole message!";
+            congratsDiv.style.animation = "fadeIn 1s ease forwards";
+          }, 500);
+        }
+      } else {
+        // Wrong guess: Trigger a shake animation and add a red border.
+        card.style.animation = "shake 0.5s";
+        input.classList.add('error');
+        setTimeout(() => {
+          card.style.animation = "";
+          input.classList.remove('error');
+        }, 500);
+      }
+    }
+
+    // Insert keyframes for the shake animation.
+    const styleSheet = document.styleSheets[0];
+    styleSheet.insertRule(`
+      @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+      }
+    `, styleSheet.cssRules.length);
+
+    // Insert keyframes for the fadeIn animation.
+    styleSheet.insertRule(`
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+    `, styleSheet.cssRules.length);
+
+    // Initialize the message area.
+    updateMessage();
+  </script>
+</body>
+</html>
